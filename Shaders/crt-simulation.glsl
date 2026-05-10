@@ -47,68 +47,21 @@ vec3 ambient ( vec3 col )
 }
 //-----------------------------------------------------------------------------
 
-vec3 blurSample ( vec2 uv )
-{
-	vec3	col = bleed ( uv );
-
-	return col * col * col;
-}
-//-----------------------------------------------------------------------------
-
-vec3 bloomBlur ( vec2 uv, float offs )
-{
-	vec4	xoffs = offs * vec4 ( -2.0, -1.0, 1.0, 2.0 ) / ( textureSize ( iChannel0, 0 ).x * 2.0 );
-	vec4	yoffs = offs * vec4 ( -2.0, -1.0, 1.0, 2.0 ) / ( textureSize ( iChannel0, 0 ).y * 2.0 );
-
-	vec3	color;
-
-	color  = blurSample ( uv + vec2 ( xoffs.x, yoffs.x ) ) * 0.00366;
-	color += blurSample ( uv + vec2 ( xoffs.y, yoffs.x ) ) * 0.01465;
-	color += blurSample ( uv + vec2 (     0.0, yoffs.x ) ) * 0.02564;
-	color += blurSample ( uv + vec2 ( xoffs.z, yoffs.x ) ) * 0.01465;
-	color += blurSample ( uv + vec2 ( xoffs.w, yoffs.x ) ) * 0.00366;
-
- 	color += blurSample ( uv + vec2 ( xoffs.x, yoffs.y ) ) * 0.01465;
-	color += blurSample ( uv + vec2 ( xoffs.y, yoffs.y ) ) * 0.05861;
-	color += blurSample ( uv + vec2 (     0.0, yoffs.y ) ) * 0.09524;
-	color += blurSample ( uv + vec2 ( xoffs.z, yoffs.y ) ) * 0.05861;
-	color += blurSample ( uv + vec2 ( xoffs.w, yoffs.y ) ) * 0.01465;
-
- 	color += blurSample ( uv + vec2 ( xoffs.x, 0.0		) ) * 0.02564;
-	color += blurSample ( uv + vec2 ( xoffs.y, 0.0		) ) * 0.09524;
-	color += blurSample ( uv + vec2 (     0.0, 0.0		) ) * 0.15018;
-	color += blurSample ( uv + vec2 ( xoffs.z, 0.0		) ) * 0.09524;
-	color += blurSample ( uv + vec2 ( xoffs.w, 0.0		) ) * 0.02564;
-
- 	color += blurSample ( uv + vec2 ( xoffs.x, yoffs.z ) ) * 0.01465;
-	color += blurSample ( uv + vec2 ( xoffs.y, yoffs.z ) ) * 0.05861;
-	color += blurSample ( uv + vec2 (     0.0, yoffs.z ) ) * 0.09524;
-	color += blurSample ( uv + vec2 ( xoffs.z, yoffs.z ) ) * 0.05861;
-	color += blurSample ( uv + vec2 ( xoffs.w, yoffs.z ) ) * 0.01465;
-
- 	color += blurSample ( uv + vec2 ( xoffs.x, yoffs.w ) ) * 0.00366;
-	color += blurSample ( uv + vec2 ( xoffs.y, yoffs.w ) ) * 0.01465;
-	color += blurSample ( uv + vec2 (     0.0, yoffs.w ) ) * 0.02564;
-	color += blurSample ( uv + vec2 ( xoffs.z, yoffs.w ) ) * 0.01465;
-	color += blurSample ( uv + vec2 ( xoffs.w, yoffs.w ) ) * 0.00366;
-
-	return color;
-}
-//-----------------------------------------------------------------------------
-
 vec3 bloom ( vec3 col, vec2 uv )
 {
 	if ( crtGlow < 0.01 )
 		return col;
 
+	float	glowSq = crtGlow * crtGlow;
 	vec3	blCol;
 
-	blCol  = bloomBlur ( uv, 1.0 );
-	blCol += bloomBlur ( uv, 1.5 );
-	blCol += bloomBlur ( uv, 2.0 );
-	blCol += bloomBlur ( uv, 2.5 );
+	blCol  = textureLod ( iChannel0, uv, 2.5 ).rgb * 0.6;
+	blCol += textureLod ( iChannel0, uv, 1.5 ).rgb * 0.3;
+	blCol += textureLod ( iChannel0, uv, 0.5 ).rgb * 0.15;
 
-	return col * ( 1.0 - ( crtGlow * crtGlow ) * 0.1 ) + blCol * 0.125 * ( crtGlow * crtGlow );
+	blCol = blCol * blCol * blCol;
+
+	return col * ( 1.0 - glowSq * 0.1 ) + blCol * glowSq;
 }
 //-----------------------------------------------------------------------------
 

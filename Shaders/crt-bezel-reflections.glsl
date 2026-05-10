@@ -5,46 +5,30 @@
 
 //-----------------------------------------------------------------------------
 
-#define	POW2(x)	(x * x)
-
-float gaussian ( vec2 i, float sigma )
+vec3 gausBlur ( vec2 uv, float radius )
 {
-	return 1.0 / ( 2.0 * PI * POW2 ( sigma ) ) * exp ( - ( ( POW2 ( i.x ) + POW2 ( i.y ) ) / ( 2.0 * POW2 ( sigma ) ) ) );
-}
-//-----------------------------------------------------------------------------
-
-vec3 gausBlur ( vec2 uv, int samples )
-{
-//	return texture ( iChannel0, uv ).rgb;
-
-	const	vec2	scale = vec2 ( 4.0 / 1080.0, 4.0 / 813.0 );
-
-	float	sigma = float ( samples );
+	float	lod = log2 ( radius * 5.0 );
+	vec2	scale = vec2 ( 4.0 / 1080.0, 4.0 / 813.0 ) * radius;
 	vec3	col = vec3 ( 0.0 );
-	vec3	clipper;
 	float	accum = 0.0;
-	float	weight;
-	vec2	offset;
 
-	for ( int x = -samples / 2; x < samples / 2; x++ )
+	const float samples = 8.0;
+	for ( float i = -samples; i <= samples; i++ )
 	{
-		for ( int y = -samples / 2; y < samples / 2; y++ )
-		{
-			offset = vec2 ( x, y );
-			weight = gaussian ( offset, sigma );
-			clipper = texture ( iChannel0, uv + scale * offset ).rgb;
+		float	weight = exp ( -0.5 * ( i * i ) / ( samples * samples ) );
+		vec2	offset = vec2 ( i / samples ) * scale;
 
-			// Remove ambient color
-			clipper = clamp ( clipper - 0.2, 0.0, 1.0 ) * ( 1.0 / 0.8 );
+		vec3	 clipper = textureLod ( iChannel0, uv + vec2 ( offset.x, 0.0 ), lod ).rgb;
+				clipper += textureLod ( iChannel0, uv + vec2 ( 0.0, offset.y ), lod ).rgb;
 
-			float	luminance = dot ( clipper, vec3 ( 0.299, 0.587, 0.114 ) );
-			float	targetLuminance =  mix ( luminance, 1.0 - luminance, 0.15 );
+		// Remove ambient color
+		clipper = clamp ( clipper - 0.2, 0.0, 1.0 ) * 1.25;
+		float	lum = dot ( clipper, vec3 ( 0.299, 0.587, 0.114 ) );
+		float	targetLum = mix ( lum, 1.0 - lum, 0.15 );
+		clipper *= targetLum / max ( lum, 0.01 );
 
-			clipper *= ( targetLuminance / max ( luminance, 0.01 ) );
-
-			col += clipper * weight;
-			accum += weight;
-		}
+		col += clipper * weight;
+		accum += weight;
 	}
 
 	return col / accum;
