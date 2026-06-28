@@ -15,7 +15,7 @@ uniform float	ovlShadowBlur = 4.0;
 
 void main ()
 {
-	vec4	pix = texture2D ( iChannel0, fragCoord );
+	vec4	pix = texture ( iChannel0, fragCoord );
 	vec2	texSize = 1.0 / textureSize ( iChannel0, 0 ).xy;
 
 	// Chromatic aberration
