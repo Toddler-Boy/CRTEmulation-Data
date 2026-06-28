@@ -89,26 +89,6 @@ vec3 decGetBlurredSignal ( vec2 uv, sampler2D tex )
 }
 //-----------------------------------------------------------------------------
 
-uniform	float	decCrosstalk = 0.25;
-uniform	float	decSubcarrier = 0.25;
-
-vec3 decGetCrosstalk ( vec3 signal, vec2 uv, sampler2D tex )
-{
-	float	chroma_phase = iTime * crtRefreshRate * 0.5 * PI;
-	float	mod_phase = chroma_phase + ( uv.x + uv.y * -0.5 ) * ( 0.5 * PI ) * textureSize ( tex, 0 ).y * 2.0;
-	float	subCarrier = decSubcarrier * signal.y;
-	float	i_mod = cos ( mod_phase );
-	float	q_mod = sin ( mod_phase );
-
-	// crosstalk
-	signal.x *= decCrosstalk * subCarrier * q_mod + 1.0;
-	signal.y *= subCarrier * i_mod + 1.0;
-	signal.z *= subCarrier * q_mod + 1.0;
-
-	return signal;
-}
-//-----------------------------------------------------------------------------
-
 uniform float	crtCurve = 0.4;
 
 vec2 curve ( vec2 uv, float level )

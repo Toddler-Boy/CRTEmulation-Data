@@ -28,9 +28,6 @@ void main ()
 	// Add jailbars
 	yuv.r += getJailbars ( vec2 ( fragCoord.x / 8.0, iResolution.x ) );
 
-	// Blend UV with previous lines' UV (Hanover-bar suppression)
-	yuv.gb = ( yuv.gb + getYUV_PAL ( uv - vec2 ( 0.0, 1.0 / textureSize ( iChannel0, 0 ).y ) ).gb ) * 0.5;
-
 	// Textures can't store negative values, we have to transpose
 	yuv.yz += 0.5;
 
