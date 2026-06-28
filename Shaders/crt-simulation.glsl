@@ -1,6 +1,7 @@
 #include "includes/mathDefines.glsl"
 #include "includes/overscan.glsl"
 #include "includes/common.glsl"
+#include "includes/colorSpaces.glsl"
 
 uniform float	crtBleed;
 uniform vec2	crtRedOffset = vec2 ( 0.0, 0.0 );
@@ -9,20 +10,7 @@ uniform vec2	crtBlueOffset = vec2 ( 0.0, 0.0 );
 uniform float	crtHoffset;
 uniform float	crtGlow;
 uniform float	crtAmbient = 0.5;
-uniform float	crtNoise;
 
-//-----------------------------------------------------------------------------
-
-vec3 srgbToLinear ( vec3 col )
-{
-	return mix ( col / 12.92, pow ( ( col + 0.055 ) / 1.055, vec3 ( 2.4 ) ), step ( 0.04045, col ) );
-}
-//-----------------------------------------------------------------------------
-
-vec3 linearToSrgb ( vec3 col )
-{
-	return mix ( col * 12.92, 1.055 * pow ( col, vec3 ( 1.0 / 2.4 ) ) - 0.055, step ( 0.0031308, col ) );
-}
 //-----------------------------------------------------------------------------
 
 vec3 bleed ( vec2 uv )
@@ -65,18 +53,6 @@ vec3 bloom ( vec3 col, vec2 uv )
 }
 //-----------------------------------------------------------------------------
 
-float noiseRand ( vec2 co )
-{
-	return fract ( sin ( dot ( co.xy, vec2 ( 12.9898, 78.233 ) ) ) * 43758.5453 );
-}
-//-----------------------------------------------------------------------------
-
-vec3 noise ( vec3 col, vec2 uv )
-{
-	vec2	seed = uv * iResolution.xy;
-	vec3	nse = vec3 ( noiseRand ( seed + iTime ), noiseRand ( seed + iTime * 2.0 ), noiseRand ( seed + iTime * 3.0 ) );
-	return col + crtNoise * ( nse - 0.5 ) * 0.33;
-}
 //-----------------------------------------------------------------------------
 
 uniform float	crtScanlines = 0.5;
