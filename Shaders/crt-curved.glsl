@@ -60,6 +60,11 @@ uniform vec3	backCol = vec3 ( 0.0, 0.0, 0.0 );
 uniform	vec3	camBrightnessContrastSaturation = vec3 ( 1.0, 1.0, 1.0 );
 uniform int		crtWebcamFormat = 0;
 
+uniform vec3	yuvCol0;
+uniform vec3	yuvCol1;
+uniform vec3	yuvCol2;
+uniform vec3	yuvBias;
+
 void main ()
 {
 	vec2	cuv = curve ( fragCoord, crtCurve );
@@ -77,30 +82,12 @@ void main ()
 	{
 		// Glass distortion
 		vec2	camCoord = glassDistortion ( vec2 ( 1.0 ) - fragCoord, crtDistortion, crtRflCorrection );
-		vec3	yuv;
 
-		// Webcam
-		if ( crtWebcamFormat == 0 )
-		{
-			// NV12
-			yuv = vec3 ( texture ( iChannel2, camCoord ).r, texture ( iChannel3, camCoord ).rg );
-		}
-		// else
-		// {
-		// 	// YUY2
-		// 	vec4	pix = texture ( iChannel5, camCoord );
-		// 	float	x = fract ( camCoord.x * ( textureSize ( iChannel5, 0 ).x * 2.0 ) );
+		// Webcam (NV12 only for now)
+		vec3	yuv = vec3 ( texture ( iChannel2, camCoord ).r, texture ( iChannel3, camCoord ).rg );
 
-		// 	yuv = vec3 ( mix ( pix.r, pix.b, x ), pix.ga );
- 		// }
-		yuv = ( yuv - vec3 ( 1.0, 0.5, 0.5 ) ) * vec3 ( 1.0, 2.0, 2.0 );
-
-		yuv.yz	*= camBrightnessContrastSaturation.z * 0.5;	// Saturation
-		yuv.x	*= camBrightnessContrastSaturation.y;		// Contrast
-		yuv.x	+= camBrightnessContrastSaturation.x;		// Brightness
-
-		// YUV -> RGB
-		rfl = clamp ( yuv2rgb_mat * yuv, 0.0, 1.0 );
+		mat3	yuvMat = mat3 ( yuvCol0, yuvCol1, yuvCol2 );
+		rfl = clamp ( yuvMat * yuv + yuvBias, 0.0, 1.0 );
 	}
 	else
 	{
@@ -108,7 +95,15 @@ void main ()
 		rfl = texture ( iChannel1, glassDistortion ( fragCoord, crtDistortion * 0.1, 1.0 ) ).rgb;
 	}
 
-	col = screen ( col, ( rfl * rfl * rfl ) * 0.25 * crtReflection * glassTint );
+	vec3	colLin = srgbToLinear ( col );
+	vec3	rflLin = srgbToLinear ( rfl );
+
+	vec3	blend  = ( rflLin * rflLin * rflLin ) * 0.25 * crtReflection * glassTint;
+
+	vec3	outLin = screen ( colLin, blend );
+
+	col = linearToSrgb ( outLin );
+//	col = vec4 ( 0.0 );
 //	col = rfl;
 
 	// Mask out corners, no CRT has 90 degree angles
