@@ -18,7 +18,7 @@ vec3 gausBlur ( vec2 uv, float radius )
 		float	weight = exp ( -0.5 * ( i * i ) / ( samples * samples ) );
 		vec2	offset = vec2 ( i / samples ) * scale;
 
-		vec3	 clipper = textureLod ( iChannel0, uv + vec2 ( offset.x, 0.0 ), lod ).rgb;
+		vec3	clipper  = textureLod ( iChannel0, uv + vec2 ( offset.x, 0.0 ), lod ).rgb;
 				clipper += textureLod ( iChannel0, uv + vec2 ( 0.0, offset.y ), lod ).rgb;
 
 		// Remove ambient color
@@ -32,6 +32,26 @@ vec3 gausBlur ( vec2 uv, float radius )
 	}
 
 	return col / accum;
+}
+//-----------------------------------------------------------------------------
+
+uniform float rflFold = 3.0;   // overlap fold multiplier; tune per-overlay
+
+vec2 foldOverlap ( vec2 uv )
+{
+	float dl = uv.x, dr = 1.0 - uv.x, dt = uv.y, db = 1.0 - uv.y;
+	if ( dl > 0.0 && dr > 0.0 && dt > 0.0 && db > 0.0 )
+	{
+		float mx = min ( dl, dr );
+		float my = min ( dt, db );
+		if ( mx < my )
+			uv.x = ( dl < dr ) ? -dl * rflFold
+			                   :  1.0 + dr * rflFold;
+		else
+			uv.y = ( dt < db ) ? -dt * rflFold
+			                   :  1.0 + db * rflFold;
+	}
+	return uv;
 }
 //-----------------------------------------------------------------------------
 
@@ -68,6 +88,7 @@ void main ()
 	uv *= rflZoom;
 	uv += rflShift;
 	uv += 0.5;
+	uv = foldOverlap ( uv );
 	vec3	col = gausBlur ( uv, rflRadius ) * rflLevel;
 
 	col += mask.rgb;
