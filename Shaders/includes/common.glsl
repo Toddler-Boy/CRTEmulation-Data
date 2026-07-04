@@ -35,23 +35,38 @@ float decRandom_v2_f ( vec2 p, float t )
 }
 //-----------------------------------------------------------------------------
 
-uniform	float	decInterference = 0.0;
-
-float peak ( float x, float xpos, float scale )
+vec2 decCreateInterference ( vec2 uv, float qinter )
 {
-	return clamp ( ( 1.0 - x ) * scale * log ( 1.0 / abs ( x - xpos ) ), 0.0, 1.0 );
-}
-//-----------------------------------------------------------------------------
+	float	interference = pow ( qinter, 1.3 );
+	float	line = round ( uv.y * 272.0 );
 
-vec2 decCreateInterference ( vec2 uv )
-{
-	float	interference = pow ( decInterference, 1.3 );
+	// Divide screen into bands; each band MAY contain one tear trigger.
+	float	bandSize = 40.0;						// lines per band
+	float	bandId   = floor ( line / bandSize );
+	float	bandPos  = line - bandId * bandSize;	// 0..bandSize within band
 
-	float	r = decRandom_v2_f ( vec2 ( 0.0, round ( uv.y * iResolution.y ) ), iTime );
-	float	extra = smoothstep ( 1.0 - interference, 1.0, r ) * 4.0;
+	// Per-band: does it tear, and where does the trigger line sit?
+	float	tt = floor ( iTime * crtRefreshRate * 0.25 );   // tears change ~12x/sec, not per-frame
+	float	rTrigger = decRandom_v2_f ( vec2 ( 0.0, bandId + tt * 100.0 ), 1.0 );
+	float	rWhere   = decRandom_v2_f ( vec2 ( 1.0, bandId ), iTime );
+	float	rDir     = decRandom_v2_f ( vec2 ( 2.0, bandId ), iTime );
 
-	float	ifx2 = interference * 0.5 * ( r * peak ( uv.y, 0.2, 0.2 * 0.01 ) );
-	uv.x += ( interference / iResolution.x ) * r * 0.4 * extra - ifx2;
+	// only some bands tear — rarer at low interference
+	float	tears = step ( 0.97 - interference * 0.15, rTrigger );
+
+	// trigger line within the band
+	float	triggerPos = rWhere * bandSize;
+
+	// distance below the trigger (0 above it, grows below)
+	float	below = max ( 0.0, bandPos - triggerPos );
+
+	// exponential decay: big at the trigger, fading down
+	float	decay = exp ( -below * 0.1 );                      // 0.15 = recovery speed
+
+	// displacement: pull to the right, scaled by decay
+	float	shift = tears * decay * 0.05 * interference;        // 0.15 = max tear strength
+
+	uv.x -= shift;                                              // positive = pull right
 
 	return uv;
 }

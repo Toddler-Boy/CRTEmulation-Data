@@ -10,8 +10,6 @@ vec3 grnHash3 ( uint n )
 }
 //-----------------------------------------------------------------------------
 
-uniform	float	decNoise = 0.0;
-
 vec3 grnGrain ( uvec2 uv, float level )
 {
 	vec3	grain = grnHash3 ( uv.x + uint ( iResolution.x ) * uv.y + ( uint ( iResolution.x ) * uint ( iResolution.y ) ) * uint ( iTime * 30.0 ) );

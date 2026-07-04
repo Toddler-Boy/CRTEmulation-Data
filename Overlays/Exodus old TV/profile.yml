@@ -1,6 +1,9 @@
 multipliers:
   shadow: 0.6
 
+screen:
+  zoom: 1.005
+
 shadow:
   offset: [ 0.2, 0.5 ]
   blur: 5

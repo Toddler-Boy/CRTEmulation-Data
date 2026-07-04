@@ -3,6 +3,9 @@ multipliers:
   bezel: 0.5
   shadow: 0.6
 
+screen:
+  zoom: 1.005
+
 bezel:
   zoom: [ 1.08, 1.062 ]
   shift: [ 0.05, -0.02 ]

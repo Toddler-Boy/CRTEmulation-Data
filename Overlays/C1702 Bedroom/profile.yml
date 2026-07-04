@@ -7,10 +7,14 @@ multipliers:
   bloom: 2.0
   light-bloom: 0.5
 
+screen:
+  zoom: 1.005
+  shift: [ 0.0, -0.7 ]
+
 bezel:
-    zoom: [ 1.15, 1.61 ]
-    shift: [ 0.0, -2.2 ]
-    radius: 20
+  zoom: [ 1.15, 1.61 ]
+  shift: [ 0.0, -2.2 ]
+  radius: 20
 
 shadow:
   offset: [ 0.3, 0.1 ]

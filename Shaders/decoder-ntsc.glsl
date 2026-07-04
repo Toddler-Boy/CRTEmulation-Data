@@ -5,9 +5,10 @@
 
 //-----------------------------------------------------------------------------
 
-uniform	float	decCrosstalk   = 0.25;
-uniform	float	decSubcarrier  = 0.25;
-uniform	float	decCrossColor  = 0.33;	// 0 = clean (comb), 1 = heavy rainbowing (cheap notch)
+uniform	float	decCrosstalk		= 0.25;
+uniform	float	decCrossColor		= 1.0;	// 0 = clean (comb), 1 = heavy rainbowing (cheap notch)
+uniform float	decDrift			= 1.0;
+uniform float	decNoise			= 0.1;	// 0 = perfect, 1 = total breakup
 
 #define	CC_TAPS		8					// taps across one subcarrier period
 
@@ -24,14 +25,12 @@ vec3 decGetCrosstalk ( vec3 signal, vec2 uv, sampler2D tex )
 	// dot-crawl phase (per-line sign -0.5 -> correct upward diagonal crawl)
 	float	chroma_phase = iTime * crtRefreshRate * 0.5 * PI;
 	float	mod_phase = chroma_phase + ( uv.x + uv.y * -0.5 ) * ( 0.5 * PI ) * texH * 2.0;
-	float	subCarrier = decSubcarrier * signal.y;
 	float	i_mod = cos ( mod_phase );
 	float	q_mod = sin ( mod_phase );
 
-	// dot crawl
-	signal.x *= decCrosstalk * subCarrier * q_mod + 1.0;
-	signal.y *= subCarrier * i_mod + 1.0;
-	signal.z *= subCarrier * q_mod + 1.0;
+	// dot crawl: residual modulated chroma leaks into luma (additive)
+	float	modChroma = signal.y * i_mod + signal.z * q_mod;   // I·cos + Q·sin
+	signal.x += decCrosstalk * modChroma * 0.25;
 
 	// cross-color: demodulate clean luma against the SAME subcarrier
 	if ( decCrossColor > 0.0 )
@@ -66,14 +65,36 @@ vec3 decGetCrosstalk ( vec3 signal, vec2 uv, sampler2D tex )
 }
 //-----------------------------------------------------------------------------
 
+float getAnalogDefects ( int texH )
+{
+	// Apply hue offset with "live" jitter and drift
+
+	// Tint drift: very slow thermal wander (minutes)
+	float	slowDrift = sin ( iTime * 0.04 ) * decDrift * 10.0;
+
+	// Tiny fast component from signal instability
+	float	srcLine  = floor ( fragCoord.y * texH );
+	float	microJitter = ( decRandom_v2_f ( vec2 ( 0.0, srcLine ), iTime ) - 0.5 ) * decDrift * 10.0;
+
+	return radians ( slowDrift + microJitter );
+}
+//-----------------------------------------------------------------------------
+
+#include "includes/verticalRoll.glsl"
 #include "includes/getSignal.glsl"
 
 void main ()
 {
-	// Complete signal for this line
-	vec3	yiq = getSignal ( fragCoord );
+	int		texH = textureSize ( iChannel0, 0 ).y;
 
-	// --- receiver / display stage (after the signal) ---
+	// Get phase-defect inherent to analog signals
+	float	angle = getAnalogDefects ( texH );
+
+	// Get Y-offset for roll emulation
+	float	rollOffset = vRollOffset ();
+
+	// Complete signal for this line
+	vec3	yiq = getSignal ( fragCoord, angle, rollOffset );
 
 	// Apply brightness, contrast, and saturation
 	yiq = encApplyBriConSat ( yiq );

@@ -4,33 +4,21 @@
 
 //
 // PAL encoder
-// Uses Hanover-bar suppression
 //
-
-vec3 getYUV_PAL ( vec2 uv )
-{
-	uint	index = texture ( iChannel0, uv ).r;
-	float	x = 1.0 / textureSize ( iChannel1, 0 ).x;
-	uint	row = ( ( uint ( ( uv.y + 1 ) * textureSize ( iChannel0, 0 ).y ) ) & 1u ) ^ 1u;
-
-	return texture ( iChannel1, vec2 ( index * x, row * 0.5 ) ).rgb;
-}
-//-----------------------------------------------------------------------------
 
 void main ()
 {
-	// Invert Y source
-	vec2	uv = vec2 ( fragCoord.x, 1.0 - fragCoord.y );
-
 	// Convert index to YUV
-	vec3	yuv = getYUV_PAL ( uv );
+	uint	index = texture ( iChannel0, vec2 ( fragCoord.x, 1 - fragCoord.y ) ).r;
+	float	x = 1.0 / textureSize ( iChannel1, 0 ).x;
+	vec3	col = texture ( iChannel1, vec2 ( index * x, 0 ) ).rgb;
 
 	// Add jailbars
-	yuv.r += getJailbars ( vec2 ( fragCoord.x / 8.0, iResolution.x ) );
+	col.r += getJailbars ( vec2 ( fragCoord.x / 8.0, iResolution.x ) );
 
 	// Textures can't store negative values, we have to transpose
-	yuv.yz += 0.5;
+	col.yz += 0.5;
 
-	fragColor = vec4 ( yuv, 0.0 );
+	fragColor = vec4 ( col, 0.0 );
 }
 //-----------------------------------------------------------------------------
