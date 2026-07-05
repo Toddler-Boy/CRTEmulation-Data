@@ -169,15 +169,12 @@ void main ()
 		rfl = texture ( iChannel1, glassDistortion ( fragCoord, crtDistortion * 0.1, 1.0 ) ).rgb;
 	}
 
-	vec3	colLin = srgbToLinear ( col );
 	vec3	rflLin = srgbToLinear ( rfl );
+	vec3	blend  = ( rflLin * rflLin * rflLin ) * 0.125 * crtReflection * glassTint;
 
-	vec3	blend  = ( rflLin * rflLin * rflLin ) * 0.25 * crtReflection * glassTint;
-
-	vec3	outLin = screen ( colLin, blend );
+	vec3	outLin = screen ( col, blend );
 
 	col = linearToSrgb ( outLin );
-//	col = vec4 ( 0.0 );
 //	col = rfl;
 
 	// Mask out corners, no CRT has 90 degree angles

@@ -1,3 +1,5 @@
+#include "includes/colorSpaces.glsl"
+
 uniform float	deltaTime = 0.0;
 
 //-----------------------------------------------------------------------------
@@ -8,9 +10,8 @@ void main ()
 	int		maxDimension = max ( baseSize.x, baseSize.y );
 	int		lastLod = int ( floor ( log2 ( float ( maxDimension ) ) ) );
 	vec3	avgColor = texelFetch ( iChannel1, ivec2 ( 0 ), lastLod ).rgb;
-	avgColor = pow ( avgColor, vec3 ( 2.2 ) );
 
-	float	targetCurrent = dot ( avgColor, vec3 ( 0.50, 0.31, 0.19 ) );
+	float	targetCurrent = dot ( avgColor, vec3 ( 0.39, 0.38, 0.23 ) );
 
 	const float	settleTime = 0.1;
 

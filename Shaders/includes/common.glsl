@@ -41,17 +41,18 @@ vec2 decCreateInterference ( vec2 uv, float qinter )
 	float	line = round ( uv.y * 272.0 );
 
 	// Divide screen into bands; each band MAY contain one tear trigger.
-	float	bandSize = 40.0;						// lines per band
+	const float	bandSize = 40.0;
+
 	float	bandId   = floor ( line / bandSize );
-	float	bandPos  = line - bandId * bandSize;	// 0..bandSize within band
+	float	bandPos  = line - bandId * bandSize;
 
 	// Per-band: does it tear, and where does the trigger line sit?
-	float	tt = floor ( iTime * crtRefreshRate * 0.25 );   // tears change ~12x/sec, not per-frame
+	float	tt = floor ( iTime * crtRefreshRate * 0.25 );
 	float	rTrigger = decRandom_v2_f ( vec2 ( 0.0, bandId + tt * 100.0 ), 1.0 );
 	float	rWhere   = decRandom_v2_f ( vec2 ( 1.0, bandId ), iTime );
 	float	rDir     = decRandom_v2_f ( vec2 ( 2.0, bandId ), iTime );
 
-	// only some bands tear — rarer at low interference
+	// only some bands tear, rarer at low interference
 	float	tears = step ( 0.97 - interference * 0.15, rTrigger );
 
 	// trigger line within the band
@@ -61,12 +62,12 @@ vec2 decCreateInterference ( vec2 uv, float qinter )
 	float	below = max ( 0.0, bandPos - triggerPos );
 
 	// exponential decay: big at the trigger, fading down
-	float	decay = exp ( -below * 0.1 );                      // 0.15 = recovery speed
+	float	decay = exp ( -below * 0.1 );
 
 	// displacement: pull to the right, scaled by decay
-	float	shift = tears * decay * 0.05 * interference;        // 0.15 = max tear strength
+	float	shift = tears * decay * 0.05 * interference;
 
-	uv.x -= shift;                                              // positive = pull right
+	uv.x -= shift;		// positive = pull right
 
 	return uv;
 }

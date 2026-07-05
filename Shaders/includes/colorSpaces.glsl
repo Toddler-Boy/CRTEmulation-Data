@@ -1,6 +1,9 @@
 //
 // Color space conversions
 //
+const vec3	luma601 = vec3 ( 0.299, 0.587, 0.114 );
+const vec3	luma709 = vec3 ( 0.2126, 0.7152, 0.0722 );
+
 const mat3 yuv2rgb_mat = mat3 ( 1.0,		 1.0,		1.0,
 								0.0,		-0.39465,	2.03211,
 								1.13983,	-0.581,		0.0 );
@@ -8,22 +11,17 @@ const mat3 yuv2rgb_mat = mat3 ( 1.0,		 1.0,		1.0,
 
 vec3 palGamma ( vec3 rgb )
 {
-	rgb = pow ( rgb, vec3 ( 1.0 / 2.2 ) );	// sRGB
-	rgb = pow ( rgb, vec3 ( 2.8 ) );		// PAL
+	const float	sRGBGamma = 2.2;
+	const float	PALgamma = 2.8;
 
-	return rgb;
+	// Apply gamma correction (2.8 to 2.2)
+	return pow ( rgb, vec3 ( 1.0 / sRGBGamma * PALgamma ) );
 }
 //-----------------------------------------------------------------------------
 
 vec3 yuv2rgb ( vec3 yuv )
 {
-	// Convert to RGB
-	yuv = yuv2rgb_mat * yuv;
-
-	// Apply gamma correction (2.8 to 2.2)
-	yuv = palGamma ( yuv );
-
-	return yuv;
+	return palGamma ( yuv2rgb_mat * yuv );
 }
 //-----------------------------------------------------------------------------
 
@@ -47,5 +45,17 @@ vec3 srgbToLinear ( vec3 col )
 vec3 linearToSrgb ( vec3 col )
 {
 	return mix ( col * 12.92, 1.055 * pow ( col, vec3 ( 1.0 / 2.4 ) ) - 0.055, step ( 0.0031308, col ) );
+}
+//-----------------------------------------------------------------------------
+
+float getsRGBLuma ( vec3 col )
+{
+	return dot ( col, luma601 );
+}
+//-----------------------------------------------------------------------------
+
+float getLinearLuma ( vec3 col )
+{
+	return dot ( col, luma709 );
 }
 //-----------------------------------------------------------------------------

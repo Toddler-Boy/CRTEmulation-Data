@@ -41,25 +41,7 @@ vec3 bleed ( vec2 uv )
 vec3 ambient ( vec3 col )
 {
 	vec3	ambientCol = mix ( vec3 ( 1.0, 0.95, 1.05 ), vec3 ( 1.0, 0.9, 1.15 ), crtAmbient );
-	return max ( col, crtAmbient * 0.16 * ambientCol );
-}
-//-----------------------------------------------------------------------------
-
-vec3 halation ( vec3 col, vec2 uv )
-{
-	if ( crtGlow < 0.01 )
-		return col;
-
-	float	glowSq = crtGlow * crtGlow;
-	vec3	blCol;
-
-	blCol  = textureLod ( iChannel0, uv, 2.5 ).rgb * 0.6;
-	blCol += textureLod ( iChannel0, uv, 1.5 ).rgb * 0.3;
-	blCol += textureLod ( iChannel0, uv, 0.5 ).rgb * 0.15;
-
-	blCol = blCol * blCol * blCol;
-
-	return col * ( 1.0 - glowSq * 0.1 ) + blCol * glowSq;
+	return max ( col, crtAmbient * 0.015 * ambientCol );
 }
 //-----------------------------------------------------------------------------
 
@@ -67,9 +49,12 @@ uniform float	crtScanlines = 0.5;
 
 vec3 scanlines ( vec3 col, float y )
 {
-	float	luma = dot ( col, vec3 ( 0.299, 0.587, 0.114 ) );
-	float	dark = abs ( sin ( PI * y ) );
-	float	line = mix ( dark, 0.85, luma * luma );
+	float	luma = getLinearLuma ( col );
+	float	p	 = mix ( 1.5, 0.3, luma );
+	float	line = pow ( abs ( sin ( PI * y ) ), p );
+
+	float	mean = inversesqrt ( 1.0 + 1.45 * p );
+	line /= mean;
 
 	return	col * mix ( 1.0, line, crtScanlines );
 }
@@ -77,13 +62,17 @@ vec3 scanlines ( vec3 col, float y )
 
 uniform float	crtMask = 0.5;
 uniform float	crtMaskScale = 0.75;
-uniform vec3	crtMaskTint = vec3 ( 20.0 );
 
 vec3 shadowMask ( vec3 col, vec2 uv )
 {
 	vec3	mask = texture ( iChannel1, uv * textureSize ( iChannel1, 0 ) * crtMaskScale ).rgb;
 	mask = srgbToLinear ( mask );
-	mask *= crtMaskTint;
+
+	// per-channel mean of the tinted mask = top mip level
+	vec3	avg = srgbToLinear ( textureLod ( iChannel1, vec2 ( 0.5 ), 16.0 ).rgb );
+
+	// normalize so the blended mask averages to 1.0 per channel
+	mask /= max ( avg, vec3 ( 0.001 ) );
 
 	mask = mix ( vec3 ( 1.0 ), mask, crtMask );
 
@@ -129,10 +118,9 @@ void main ()
 	// CRT-style post FX
 	col = bleed ( uv );
 	col = srgbToLinear ( col );
+	col.b = col.b / ( 1.0 + crtBloomExpansion * 0.2 * col.b );
 	col = scanlines ( col, uv.y * textureSize ( iChannel0, 0 ).y );
 	col = shadowMask ( col, fragCoord );
-	col = halation ( col, uv );
-	col = linearToSrgb ( col );
 	col = ambient ( col );
 	col = phosphorDecay ( col );
 

@@ -87,11 +87,11 @@ void main ()
 {
 	int		texH = textureSize ( iChannel0, 0 ).y;
 
-	// Get phase-defect inherent to analog signals
-	float	angle = getAnalogDefects ( texH );
-
 	// Get Y-offset for roll emulation
 	float	rollOffset = vRollOffset ();
+
+	// Get phase-defect inherent to analog signals
+	float	angle = getAnalogDefects ( texH );
 
 	// Complete signal for this line
 	vec3	yiq = getSignal ( fragCoord, angle, rollOffset );

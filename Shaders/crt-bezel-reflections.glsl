@@ -1,18 +1,20 @@
 #include "includes/mathDefines.glsl"
 #include "includes/common.glsl"
 #include "includes/colorGrade.glsl"
+#include "includes/colorSpaces.glsl"
 #include "includes/grain.glsl"
 
 //-----------------------------------------------------------------------------
 
 vec3 gausBlur ( vec2 uv, float radius )
 {
+	const float	samples = 8.0;
+
 	float	lod = log2 ( radius * 5.0 );
-	vec2	scale = vec2 ( 4.0 / 1080.0, 4.0 / 813.0 ) * radius;
+	vec2	scale = ( vec2 ( samples ) / textureSize ( iChannel0, 0 ).xy ) * radius;
 	vec3	col = vec3 ( 0.0 );
 	float	accum = 0.0;
 
-	const float samples = 8.0;
 	for ( float i = -samples; i <= samples; i++ )
 	{
 		float	weight = exp ( -0.5 * ( i * i ) / ( samples * samples ) );
@@ -22,10 +24,12 @@ vec3 gausBlur ( vec2 uv, float radius )
 				clipper += textureLod ( iChannel0, uv + vec2 ( 0.0, offset.y ), lod ).rgb;
 
 		// Remove ambient color
-		clipper = clamp ( clipper - 0.2, 0.0, 1.0 ) * 1.25;
-		float	lum = dot ( clipper, vec3 ( 0.299, 0.587, 0.114 ) );
-		float	targetLum = mix ( lum, 1.0 - lum, 0.15 );
-		clipper *= targetLum / max ( lum, 0.01 );
+		clipper = max ( clipper - 0.1, 0.0 ) * 1.5;
+
+ 		// Compress luma
+ 		float	lum = getLinearLuma ( clipper );
+		float	targetLum = mix ( lum, 1.0 - lum, 0.25 );
+		clipper *= targetLum / max ( lum, 0.1 );
 
 		col += clipper * weight;
 		accum += weight;
@@ -89,6 +93,7 @@ void main ()
 	uv += rflShift;
 	uv += 0.5;
 	uv = foldOverlap ( uv );
+//	vec3	col = gausBlur ( uv, 8.0 ) * rflLevel;
 	vec3	col = gausBlur ( uv, rflRadius ) * rflLevel;
 
 	col += mask.rgb;

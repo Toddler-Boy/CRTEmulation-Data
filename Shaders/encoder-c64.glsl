@@ -1,13 +1,22 @@
+#include "includes/jailbars.glsl"
+
+//-----------------------------------------------------------------------------
+
 //
-// YUV encoder
+// C64 YUV/YIQ encoder
 //
+
+uniform float	encPaletteY = 0.0;
 
 void main ()
 {
 	// Convert index to YUV
 	uint	index = texture ( iChannel0, vec2 ( fragCoord.x, 1 - fragCoord.y ) ).r;
 	float	x = 1.0 / textureSize ( iChannel1, 0 ).x;
-	vec3	col = texture ( iChannel1, vec2 ( index * x, 0 ) ).rgb;
+	vec3	col = texture ( iChannel1, vec2 ( index * x, encPaletteY ) ).rgb;
+
+	// Add jailbars
+	col.r += getJailbars ( vec2 ( fragCoord.x / 8.0, iResolution.x ) );
 
 	// Textures can't store negative values, we have to transpose
 	col.yz += 0.5;
