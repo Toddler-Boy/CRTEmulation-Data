@@ -14,7 +14,7 @@ screen:
 bezel:
   zoom: [ 1.15, 1.61 ]
   shift: [ 0.0, -2.2 ]
-  radius: 10
+  radius: 20
 
 shadow:
   offset: [ 0.3, 0.1 ]

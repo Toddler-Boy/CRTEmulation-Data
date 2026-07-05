@@ -24,12 +24,12 @@ vec3 gausBlur ( vec2 uv, float radius )
 				clipper += textureLod ( iChannel0, uv + vec2 ( 0.0, offset.y ), lod ).rgb;
 
 		// Remove ambient color
-		clipper = max ( clipper - 0.1, 0.0 ) * 1.5;
+		clipper = max ( clipper - 0.1, 0.0 );
 
  		// Compress luma
  		float	lum = getLinearLuma ( clipper );
 		float	targetLum = mix ( lum, 1.0 - lum, 0.25 );
-		clipper *= targetLum / max ( lum, 0.1 );
+		clipper *= targetLum / max ( lum, 0.3 );
 
 		col += clipper * weight;
 		accum += weight;
@@ -93,7 +93,6 @@ void main ()
 	uv += rflShift;
 	uv += 0.5;
 	uv = foldOverlap ( uv );
-//	vec3	col = gausBlur ( uv, 8.0 ) * rflLevel;
 	vec3	col = gausBlur ( uv, rflRadius ) * rflLevel;
 
 	col += mask.rgb;

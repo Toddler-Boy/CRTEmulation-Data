@@ -43,7 +43,7 @@ float vignette ( vec2 uv )
 
 	uv *= 1.0 - uv;
 
-	return clamp ( pow ( uv.x * uv.y * 1024.0, crtVignette * 0.28 * bias ), 0.0, 1.0 );
+	return clamp ( pow ( uv.x * uv.y * 1024.0, crtVignette * bias ), 0.0, 1.0 );
 }
 //-----------------------------------------------------------------------------
 
