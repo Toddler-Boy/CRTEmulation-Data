@@ -23,9 +23,6 @@ vec3 gausBlur ( vec2 uv, float radius )
 		vec3	clipper  = textureLod ( iChannel0, uv + vec2 ( offset.x, 0.0 ), lod ).rgb;
 				clipper += textureLod ( iChannel0, uv + vec2 ( 0.0, offset.y ), lod ).rgb;
 
-		// Remove ambient color
-		clipper = max ( clipper - 0.02, 0.0 );
-
  		// Compress luma
  		float	lum = getLinearLuma ( clipper );
 		lum *= lum;

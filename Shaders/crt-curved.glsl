@@ -36,14 +36,14 @@ float vignette ( vec2 uv )
 {
 	// Zoom in a tiny bit to hide hard-edges
 	uv -= 0.5;
-	uv *= 0.998;
+	uv *= 0.995;
 	uv += 0.5;
 
 	float	bias = 1.0 + dot ( uv - 0.5, vec2 ( 0.65, 0.40 ) * crtVignette );
 
 	uv *= 1.0 - uv;
 
-	return clamp ( pow ( uv.x * uv.y * 1024.0, crtVignette * bias ), 0.0, 1.0 );
+	return 1.0 - clamp ( pow ( uv.x * uv.y * 512.0, crtVignette * bias * 0.5 ), 0.0, 1.0 );
 }
 //-----------------------------------------------------------------------------
 
@@ -137,6 +137,15 @@ vec3 gausBlurWebcam ( sampler2D textY, sampler2D textUV, vec2 uv, float radius )
 }
 //-----------------------------------------------------------------------------
 
+uniform float	crtAmbient = 0.5;
+
+vec3 ambient ( vec3 col )
+{
+	vec3	ambientCol = mix ( vec3 ( 1.0, 0.890, 1.118 ), vec3 ( 1.0, 0.787, 1.376 ), crtAmbient );
+	return max ( col, crtAmbient * 0.03 * ambientCol );
+}
+//-----------------------------------------------------------------------------
+
 void main ()
 {
 	// Get CRT curvature
@@ -144,7 +153,10 @@ void main ()
 	vec3	col = texture ( iChannel0, cuv ).rgb;
 
 	// Add vignette
-	col *= vignette ( cuv );
+	col = mix ( col, ambient ( vec3 ( 0.0 ) ), vignette ( cuv ) );
+
+	// Phosphor has its own color
+	col = ambient ( col );
 
 	// Reflection in glass
 	const vec3	glassTint = vec3 ( 0.8, 0.9, 1.0 );

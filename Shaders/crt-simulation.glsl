@@ -121,7 +121,7 @@ void main ()
 	col.b = col.b / ( 1.0 + crtBloomExpansion * 0.2 * col.b );
 	col = scanlines ( col, uv.y * textureSize ( iChannel0, 0 ).y );
 	col = shadowMask ( col, fragCoord );
-	col = ambient ( col );
+//	col = ambient ( col );
 	col = phosphorDecay ( col );
 
 	fragColor = vec4 ( col, 1.0 );
