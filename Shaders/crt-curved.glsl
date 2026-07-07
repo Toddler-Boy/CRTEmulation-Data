@@ -142,7 +142,7 @@ uniform float	crtAmbient = 0.5;
 vec3 ambient ( vec3 col )
 {
 	vec3	ambientCol = mix ( vec3 ( 1.0, 0.890, 1.118 ), vec3 ( 1.0, 0.787, 1.376 ), crtAmbient );
-	return max ( col, crtAmbient * 0.03 * ambientCol );
+	return max ( col, crtAmbient * 0.02 * ambientCol );
 }
 //-----------------------------------------------------------------------------
 
