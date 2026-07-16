@@ -6,6 +6,6 @@ float getJailbars ( vec2 uv )
 
 	tri = smoothstep ( 0.8, 1.0, tri );
 
-	return ( tri * tri ) * ( decJailbars * decJailbars * decJailbars ) * 0.075;
+	return ( tri * tri ) * pow ( decJailbars, 3.3 ) * 0.09;
 }
 //-----------------------------------------------------------------------------

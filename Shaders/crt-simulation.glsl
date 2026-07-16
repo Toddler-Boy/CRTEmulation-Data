@@ -108,6 +108,15 @@ vec2 bloomExpansion ( vec2 uv )
 }
 //-----------------------------------------------------------------------------
 
+vec3 reduceBlue ( vec3 col )
+{
+	// Bloom expansion also reduces blue level
+	col.b = col.b / ( 1.0 + crtBloomExpansion * 0.2 * col.b );
+
+	return col;
+}
+//-----------------------------------------------------------------------------
+
 void main ()
 {
 	vec3	col;
@@ -118,10 +127,9 @@ void main ()
 	// CRT-style post FX
 	col = bleed ( uv );
 	col = srgbToLinear ( col );
-	col.b = col.b / ( 1.0 + crtBloomExpansion * 0.2 * col.b );
+	col = reduceBlue ( col );
 	col = scanlines ( col, uv.y * textureSize ( iChannel0, 0 ).y );
 	col = shadowMask ( col, fragCoord );
-//	col = ambient ( col );
 	col = phosphorDecay ( col );
 
 	fragColor = vec4 ( col, 1.0 );
