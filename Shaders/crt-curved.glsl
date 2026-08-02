@@ -66,6 +66,7 @@ uniform float	crtRflCorrection = 1.0;
 uniform vec3	backCol = vec3 ( 0.0, 0.0, 0.0 );
 
 uniform	vec3	camBrightnessContrastSaturation = vec3 ( 1.0, 1.0, 1.0 );
+uniform float	camZoom = 1.0;
 uniform int		crtWebcamFormat = 0;
 
 uniform vec3	yuvCol0;
@@ -167,6 +168,10 @@ void main ()
 	{
 		// Glass distortion
 		vec2	camCoord = glassDistortion ( vec2 ( 1.0 ) - fragCoord, crtDistortion, crtRflCorrection );
+
+		// Zoom shrinks the sample window around center, the distortion shape
+		// stays that of the full glass
+		camCoord = ( camCoord - 0.5 ) / camZoom + 0.5;
 //		vec3	yuv = gausBlurWebcam ( iChannel2, iChannel3, camCoord, 2.0 );
 
 		// Webcam (NV12 only for now)
