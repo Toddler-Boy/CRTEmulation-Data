@@ -62,6 +62,22 @@ vec3 add ( vec3 base, vec3 blend )
 uniform bool	crtSource = true;
 uniform float	crtReflection = 0.25;
 uniform float	crtRflCorrection = 1.0;
+uniform float	crtRotation = 0.0;
+uniform float	crtAspect = 1.0;	// Quad w/h; iResolution is the viewport, not the quad
+
+// The quad rotates with the tube; reflections sample counter-rotated so the
+// reflected room stays level
+vec2 counterRotate ( vec2 uv )
+{
+	vec2	p = ( uv - 0.5 ) * vec2 ( crtAspect, 1.0 );
+
+	float	sinR = sin ( crtRotation );
+	float	cosR = cos ( crtRotation );
+
+	p = vec2 ( p.x * cosR + p.y * sinR, p.y * cosR - p.x * sinR );
+
+	return p / vec2 ( crtAspect, 1.0 ) + 0.5;
+}
 
 uniform vec3	backCol = vec3 ( 0.0, 0.0, 0.0 );
 
@@ -167,7 +183,7 @@ void main ()
 	if ( crtSource )
 	{
 		// Glass distortion
-		vec2	camCoord = glassDistortion ( vec2 ( 1.0 ) - fragCoord, crtDistortion, crtRflCorrection );
+		vec2	camCoord = glassDistortion ( vec2 ( 1.0 ) - counterRotate ( fragCoord ), crtDistortion, crtRflCorrection );
 
 		// Zoom shrinks the sample window around center, the distortion shape
 		// stays that of the full glass
@@ -183,7 +199,7 @@ void main ()
 	else
 	{
 		// Glass reflection texture
-		rfl = texture ( iChannel1, glassDistortion ( fragCoord, crtDistortion * 0.1, 1.0 ) ).rgb;
+		rfl = texture ( iChannel1, glassDistortion ( counterRotate ( fragCoord ), crtDistortion * 0.1, 1.0 ) ).rgb;
 	}
 
 	vec3	rflLin = srgbToLinear ( rfl );
