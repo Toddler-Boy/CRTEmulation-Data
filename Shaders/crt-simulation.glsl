@@ -46,14 +46,14 @@ vec3 ambient ( vec3 col )
 //-----------------------------------------------------------------------------
 
 uniform float	crtScanlines = 0.5;
-uniform float	crtScanlineShape = 0.0;
 uniform float	crtLinePixels = 5.0;	// Physical on-screen pixels per source line
 
 // A small or distant screen blends the fine patterns away before the eye,
-// and a small render target could only alias them, so both fade out early
-float detailFade ()
+// and a small render target could only alias them, so they fade out early.
+// featureScale: how much larger than the reference the pattern renders
+float detailFade ( float featureScale )
 {
-	return smoothstep ( 2.0, 5.0, crtLinePixels );
+	return smoothstep ( 2.0, 5.0, crtLinePixels * featureScale );
 }
 
 // y in source lines: the beam lights each line's center, the gap between
@@ -65,26 +65,29 @@ vec3 scanlines ( vec3 col, float y )
 	// Distance from the line's center, 0.5 = the boundary to the neighbor
 	float	dist = abs ( fract ( y ) - 0.5 );
 
-	// A brighter beam widens the lit core; the square shape pins it to
-	// exactly two lines and hardens the edge
-	float	width = mix ( mix ( 0.2, 0.35, luma ), 0.25, crtScanlineShape );
-	float	soft = mix ( 0.25, 0.001, crtScanlineShape );
+	// A brighter beam widens the lit core
+	float	width = mix ( 0.2, 0.35, luma );
 
-	float	line = 1.0 - smoothstep ( width - soft, width + soft, dist );
+	float	line = 1.0 - smoothstep ( width - 0.25, width + 0.25, dist );
 
 	// Normalize so the pattern's mean stays 1.0
 	line /= 2.0 * width;
 
-	return	col * mix ( 1.0, line, crtScanlines * detailFade () );
+	return	col * mix ( 1.0, line, crtScanlines * detailFade ( 1.0 ) );
 }
 //-----------------------------------------------------------------------------
 
 uniform float	crtMask = 0.5;
-uniform float	crtMaskScale = 0.75;
 
 vec3 shadowMask ( vec3 col, vec2 uv )
 {
-	vec3	mask = texture ( iChannel1, uv * textureSize ( iChannel1, 0 ) * crtMaskScale ).rgb;
+	// 64px is the reference mask size, a larger bitmap renders proportionally
+	// larger slots (the SX-64 look)
+	const vec2	refSize = vec2 ( 64.0 * 64.0 * 0.75 );
+
+	vec2	texSize = vec2 ( textureSize ( iChannel1, 0 ).xy );
+	vec2	repeats = refSize / texSize;
+	vec3	mask = texture ( iChannel1, uv * repeats ).rgb;
 	mask = srgbToLinear ( mask );
 
 	// per-channel mean of the tinted mask = top mip level
@@ -93,7 +96,8 @@ vec3 shadowMask ( vec3 col, vec2 uv )
 	// normalize so the blended mask averages to 1.0 per channel
 	mask /= max ( avg, vec3 ( 0.001 ) );
 
-	mask = mix ( vec3 ( 1.0 ), mask, crtMask * detailFade () );
+	// A coarser mask stays resolvable on smaller screens
+	mask = mix ( vec3 ( 1.0 ), mask, crtMask * detailFade ( texSize.x / 64.0 ) );
 
 	return mask * col;
 }
