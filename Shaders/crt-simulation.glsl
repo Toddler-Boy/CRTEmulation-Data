@@ -46,17 +46,36 @@ vec3 ambient ( vec3 col )
 //-----------------------------------------------------------------------------
 
 uniform float	crtScanlines = 0.5;
+uniform float	crtScanlineShape = 0.0;
+uniform float	crtLinePixels = 5.0;	// Physical on-screen pixels per source line
 
+// A small or distant screen blends the fine patterns away before the eye,
+// and a small render target could only alias them, so both fade out early
+float detailFade ()
+{
+	return smoothstep ( 2.0, 5.0, crtLinePixels );
+}
+
+// y in source lines: the beam lights each line's center, the gap between
+// lines is what reads as scanlines
 vec3 scanlines ( vec3 col, float y )
 {
 	float	luma = getLinearLuma ( col );
-	float	p	 = mix ( 1.5, 0.3, luma );
-	float	line = pow ( abs ( sin ( PI * y ) ), p );
 
-	float	mean = inversesqrt ( 1.0 + 1.45 * p );
-	line /= mean;
+	// Distance from the line's center, 0.5 = the boundary to the neighbor
+	float	dist = abs ( fract ( y ) - 0.5 );
 
-	return	col * mix ( 1.0, line, crtScanlines );
+	// A brighter beam widens the lit core; the square shape pins it to
+	// exactly two lines and hardens the edge
+	float	width = mix ( mix ( 0.2, 0.35, luma ), 0.25, crtScanlineShape );
+	float	soft = mix ( 0.25, 0.001, crtScanlineShape );
+
+	float	line = 1.0 - smoothstep ( width - soft, width + soft, dist );
+
+	// Normalize so the pattern's mean stays 1.0
+	line /= 2.0 * width;
+
+	return	col * mix ( 1.0, line, crtScanlines * detailFade () );
 }
 //-----------------------------------------------------------------------------
 
@@ -74,7 +93,7 @@ vec3 shadowMask ( vec3 col, vec2 uv )
 	// normalize so the blended mask averages to 1.0 per channel
 	mask /= max ( avg, vec3 ( 0.001 ) );
 
-	mask = mix ( vec3 ( 1.0 ), mask, crtMask );
+	mask = mix ( vec3 ( 1.0 ), mask, crtMask * detailFade () );
 
 	return mask * col;
 }

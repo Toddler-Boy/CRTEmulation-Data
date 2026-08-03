@@ -6,6 +6,7 @@
 //-----------------------------------------------------------------------------
 
 uniform	float	decCrosstalk		= 0.25;
+uniform float	decPhase			= 22.5;	// V-switch alternation angle in degrees
 uniform	float	decPALDelayLine		= 1.0;
 uniform float	decDrift			= 0.0;
 uniform float	decNoise			= 0.1;	// 0 = perfect, 1 = total breakup
@@ -44,7 +45,7 @@ float getAnalogDefects ( int texH )
 	float	drift  = sin ( iTime * 1.5 + srcLine * 0.3 ) * decDrift * 6.0;
 	float	jitter = ( decRandom_v2_f ( vec2 ( 0.0, srcLine ), iTime ) - 0.5 ) * decDrift * 8.0;
 
-	return lineSign * radians ( 22.5 + drift + jitter );
+	return lineSign * radians ( decPhase + drift + jitter );
 }
 //-----------------------------------------------------------------------------
 
