@@ -1,0 +1,26 @@
+crt:
+  noise: 10
+  sharpening: 30
+  luma-blur: 50
+  chroma-blur: 50
+  crosstalk: 20
+  hannover: 90
+  rainbowing: 50
+  drift: 20
+  curve: 25
+  rotation: -7
+  bleed: 20
+  bleed-red: -100, 0
+  bleed-green: 75, -75
+  bleed-blue: 75, 75
+  convergence: 20
+  h-wave: 50
+  expansion: 50
+  scanlines: 35
+  mask: 25
+  mask-bitmap: $DATA$/Slot Mask
+  phosphor-decay: 40
+  vignette: 50
+  adjacent: 50
+  halation: 50
+  ambient: 50

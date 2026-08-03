@@ -1,0 +1,26 @@
+crt:
+  noise: 12
+  sharpening: 38
+  luma-blur: 56
+  chroma-blur: 48
+  crosstalk: 33
+  hannover: 73
+  rainbowing: 50
+  drift: 43
+  curve: 33
+  rotation: 6
+  bleed: 16
+  bleed-red: 100, 6
+  bleed-green: -100, -3
+  bleed-blue: 100, 16
+  convergence: 40
+  h-wave: 50
+  expansion: 100
+  scanlines: 35
+  mask: 25
+  mask-bitmap: $DATA$/Shadow Mask
+  phosphor-decay: 40
+  vignette: 50
+  adjacent: 50
+  halation: 50
+  ambient: 50
