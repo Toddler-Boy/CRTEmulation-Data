@@ -19,7 +19,7 @@ crt:
   scanlines: 35
   mask: 25
   mask-bitmap: $DATA$/Slot Mask
-  phosphor-decay: 40
+  phosphor-decay: 60
   vignette: 50
   adjacent: 50
   halation: 50
