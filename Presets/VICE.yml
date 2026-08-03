@@ -1,9 +1,11 @@
 crt:
+  jailbars: 0
   noise: 0
   sharpening: 0
   luma-blur: 0
   chroma-blur: 0
   crosstalk: 0
+  phase: 22.5
   hannover: 100
   rainbowing: 0
   drift: 0

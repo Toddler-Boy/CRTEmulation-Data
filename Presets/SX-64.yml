@@ -4,22 +4,22 @@ crt:
   luma-blur: 50
   chroma-blur: 50
   crosstalk: 20
-  phase: 0
+  phase: 22.5
   hannover: 90
   rainbowing: 50
   drift: 20
-  curve: 25
-  rotation: -7
-  bleed: 20
+  curve: 31
+  rotation: 4
+  bleed: 21
   bleed-red: -100, 0
   bleed-green: 75, -75
   bleed-blue: 75, 75
-  convergence: 20
+  convergence: 28
   h-wave: 50
-  expansion: 50
-  scanlines: 35
-  mask: 25
-  mask-bitmap: $DATA$/Slot Mask
+  expansion: 100
+  scanlines: 100
+  mask: 100
+  mask-bitmap: $DATA$/SX-64
   phosphor-decay: 60
   vignette: 50
   adjacent: 50

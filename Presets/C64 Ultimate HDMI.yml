@@ -1,4 +1,5 @@
 crt:
+  jailbars: 0
   noise: 0
   sharpening: 0
   luma-blur: 0
@@ -18,7 +19,6 @@ crt:
   h-wave: 0
   expansion: 0
   scanlines: 0
-  scanline-shape: 0
   mask: 0
   mask-bitmap: $DATA$/Slot Mask
   phosphor-decay: 70

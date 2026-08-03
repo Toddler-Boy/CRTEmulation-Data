@@ -4,6 +4,7 @@ crt:
   luma-blur: 56
   chroma-blur: 48
   crosstalk: 33
+  phase: 0
   hannover: 73
   rainbowing: 50
   drift: 43
