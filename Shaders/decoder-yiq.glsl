@@ -20,6 +20,6 @@ void main ()
 	yiq = encApplyBriConSat ( yiq );
 
 	// Convert YIQ to RGB
-	fragColor = vec4 ( yiq2rgb ( yiq ), 0.0 );
+	fragColor = vec4 ( encApplyTint ( yiq2rgb ( yiq ) ), 0.0 );
 }
 //-----------------------------------------------------------------------------

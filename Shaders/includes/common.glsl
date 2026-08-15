@@ -18,6 +18,15 @@ vec3 encApplyBriConSat ( vec3 lumChrChr )
 }
 //-----------------------------------------------------------------------------
 
+// Warm/cold white point, per-channel gains come luma-normalized from the host
+uniform	vec3	encTintGains = vec3 ( 1.0 );
+
+vec3 encApplyTint ( vec3 rgb )
+{
+	return rgb * encTintGains;
+}
+//-----------------------------------------------------------------------------
+
 //
 // Decoder uniforms
 //

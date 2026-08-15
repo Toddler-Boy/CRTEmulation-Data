@@ -78,6 +78,6 @@ void main ()
 	yuv = encApplyBriConSat ( yuv );
 
 	// Convert YUV to RGB
-	fragColor = vec4 ( yuv2rgb ( yuv ), 0.0 );
+	fragColor = vec4 ( encApplyTint ( yuv2rgb ( yuv ) ), 0.0 );
 }
 //-----------------------------------------------------------------------------
