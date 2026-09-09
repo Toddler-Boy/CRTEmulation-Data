@@ -136,12 +136,14 @@ vec3 gausBlurWebcam ( sampler2D textY, sampler2D textUV, vec2 uv, float radius )
 		// --- HORIZONTAL PASS ---
 		vec2  uvH = uv + vec2 ( offset.x, 0.0 );
 		float yH  = textureLod ( textY,  uvH, lod ).r;
-		vec2  uv2H = textureLod ( textUV, uvH, max(0.0, lod - 1.0) ).rg;
+		vec4  cH  = textureLod ( textUV, uvH, max(0.0, lod - 1.0) );
+		vec2  uv2H = crtWebcamFormat == 1 ? cH.ga : cH.rg;
 
 		// --- VERTICAL PASS ---
 		vec2  uvV = uv + vec2 ( 0.0, offset.y );
 		float yV  = textureLod ( textY,  uvV, lod ).r;
-		vec2  uv2V = textureLod ( textUV, uvV, max(0.0, lod - 1.0) ).rg;
+		vec4  cV  = textureLod ( textUV, uvV, max(0.0, lod - 1.0) );
+		vec2  uv2V = crtWebcamFormat == 1 ? cV.ga : cV.rg;
 
 		// Accumulate raw YUV channels directly [1]
 		accumYUV += vec3(yH, uv2H) * weight;
@@ -190,8 +192,10 @@ void main ()
 		camCoord = ( camCoord - 0.5 ) / camZoom + 0.5;
 //		vec3	yuv = gausBlurWebcam ( iChannel2, iChannel3, camCoord, 2.0 );
 
-		// Webcam (NV12 only for now)
-		vec3	yuv = vec3 ( texture ( iChannel2, camCoord ).r, texture ( iChannel3, camCoord ).rg );
+		// Webcam planes: NV12 = Y in iChannel2.r, UV in iChannel3.rg; YUY2 = the
+		// packed rows twice, Y in iChannel2.r, U/V in iChannel3.ga
+		vec4	camC = texture ( iChannel3, camCoord );
+		vec3	yuv = vec3 ( texture ( iChannel2, camCoord ).r, crtWebcamFormat == 1 ? camC.ga : camC.rg );
 
 		mat3	yuvMat = mat3 ( yuvCol0, yuvCol1, yuvCol2 );
 		rfl = clamp ( yuvMat * yuv + yuvBias, 0.0, 1.0 );
