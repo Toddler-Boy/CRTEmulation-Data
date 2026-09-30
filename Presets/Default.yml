@@ -4,7 +4,7 @@ crt:
   luma-blur: 50
   chroma-blur: 50
   crosstalk: 20
-  phase: 0
+  phase: 22.5
   hannover: 90
   rainbowing: 50
   drift: 20
@@ -20,7 +20,7 @@ crt:
   scanlines: 35
   mask: 25
   mask-bitmap: $DATA$/Slot Mask
-  phosphor-decay: 60
+  phosphor-decay: 65
   vignette: 50
   adjacent: 50
   halation: 50
